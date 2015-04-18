@@ -24,6 +24,7 @@ def SGD(V,W,H, totalIter , Ni, Nj, blockRange):
     t0 = 100
     I = V.nonzero()[0].size
     for i in xrange(I):
+        # Randomly pick an element
         rand = random.randint(0, I-1)
         row,col = nonzero[0][rand], nonzero[1][rand]
         value = V[row,col]
@@ -64,7 +65,6 @@ def matrixFactorization(V):
             items = []
             variables = []
             for block in xrange(workers):
-
                 rowRange = [rowRangeList[block][0], rowRangeList[block][1]]
                 colRange = [colRangeList[block][0], colRangeList[block][1]]
                 Vn = V[rowRange[0]:rowRange[1], colRange[0]:colRange[1]]
@@ -78,12 +78,16 @@ def matrixFactorization(V):
                     Nj[i-colRange[0]] = V[:,i].nonzero()[0].size 
                 if (Vn.nonzero()[0].size != 0):
                     variables.append([Vn, Wn, Hn, iterations, Ni, Nj, (rowRange, colRange)])
+            #Process SGD on all the blocks in parrallel since the rows and cols are interchangeable
             results = spark.parallelize(variables, workers).map(lambda x: SGD(x[0],x[1],x[2],x[3],x[4],x[5],x[6])).collect()
             for result in results:
                 iterations += result[2]
                 rowRange,colRange = result[3]
                 W[rowRange[0]:rowRange[1],:] = result[0]
                 H[:,colRange[0]:colRange[1]] = result[1]
+
+            #Take end of list and insert into the front
+            #Conceptually moves all the blocks selected in the next iteration downwards by on block size
             colRangeList.insert(0,colRangeList.pop())
             
 
