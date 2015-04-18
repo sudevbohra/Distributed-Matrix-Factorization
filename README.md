@@ -17,9 +17,11 @@ $ spark-submit dsgd_mf.py 20 5 100 0.9 1.0 test.csv w.csv h.csv
 ## Input
 Takes input of matrix V in sparse format. One row, col, value per line
 eg. the 2x2 identity matrix would look like
-$ 0,0,1
-$ 1,1,1
 
+```
+0,0,1
+1,1,1
+```
 
 ## Output
 Outputs file w.csv and h.csv in dense matrix format
